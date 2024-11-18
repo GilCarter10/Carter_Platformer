@@ -42,11 +42,11 @@ public class PlayerController : MonoBehaviour
             playerInput = new Vector2(1, 0) * speed;
             rb.AddForce(playerInput);
         }
-
     }
 
     public bool IsWalking()
     {
+
         if (rb.velocity == Vector2.zero)
         {
             return false;
@@ -59,17 +59,36 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        return true;
+        if (rb.velocity.y != 0)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+
     }
+
+    FacingDirection previous = FacingDirection.left;
 
     public FacingDirection GetFacingDirection()
     {
+
         if (rb.velocity.x > 0)
         {
+            previous = FacingDirection.right;
             return FacingDirection.right;
+
+        }
+
+        if (rb.velocity.x < 0)
+        {
+            previous = FacingDirection.left;
+            return FacingDirection.left;
         } else
         {
-            return FacingDirection.left;
+            return previous;
         }
+
     }
 }
