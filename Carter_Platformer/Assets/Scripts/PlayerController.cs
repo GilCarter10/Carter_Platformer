@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
         
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
 
     }
 
@@ -59,11 +60,12 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Space) && IsGrounded() == true)
         {
-            gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
+            
 
             initialJumpVel = 2 * apexHeight / apexTime;
-            currentVelocity += new Vector2(0, initialJumpVel);
+            currentVelocity += new Vector2(0, initialJumpVel) * Time.deltaTime;
         }
+        currentVelocity += new Vector2(0, gravity) * Time.deltaTime;
 
         rb.velocity = currentVelocity;
     }
