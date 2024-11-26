@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -12,6 +13,9 @@ public class PlayerController : MonoBehaviour
 
     public Rigidbody2D rb;
     private float acceleration;
+
+    public LayerMask layer;
+    public RaycastHit hitTarget;
 
     public float maxSpeed;
     public float timeToReachMaxSpeed;
@@ -29,7 +33,15 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
+        initialJumpVel = 2 * apexHeight / apexTime;
         acceleration = maxSpeed / timeToReachMaxSpeed;
+    }
+
+    private void FixedUpdate()
+    {
+
     }
 
     // Update is called once per frame
@@ -37,16 +49,16 @@ public class PlayerController : MonoBehaviour
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
-        
+
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
-        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
-
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
         Vector2 currentVelocity = rb.velocity;
+
+        //Debug.Log(currentVelocity);
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
@@ -58,14 +70,21 @@ public class PlayerController : MonoBehaviour
             currentVelocity += acceleration * Time.deltaTime * Vector2.right;
         }
 
-        if (Input.GetKey(KeyCode.Space) && IsGrounded() == true)
-        {
-            
 
-            initialJumpVel = 2 * apexHeight / apexTime;
-            currentVelocity += new Vector2(0, initialJumpVel) * Time.deltaTime;
+        if (Input.GetKeyDown(KeyCode.Space) /*&& IsGrounded() == true*/)
+        {
+
+            currentVelocity.y += initialJumpVel;
         }
-        currentVelocity += new Vector2(0, gravity) * Time.deltaTime;
+
+        if (IsGrounded() == false)
+        {
+            //do gravity
+            //currentVelocity.y += gravity * Time.deltaTime;
+        }
+
+        currentVelocity.y += gravity * Time.deltaTime;
+        //currentVelocity += new Vector2(0, gravity);
 
         rb.velocity = currentVelocity;
     }
@@ -73,7 +92,7 @@ public class PlayerController : MonoBehaviour
     public bool IsWalking()
     {
 
-        if (rb.velocity == Vector2.zero)
+        if (rb.velocity.x == 0)
         {
             return false;
         }
@@ -85,13 +104,19 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        if (rb.velocity.y != 0)
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hitTarget, 1000f, layer))
         {
-            return false;
-        } else
-        {
-            return true;
+
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hitTarget.distance, Color.yellow);
+            Debug.Log("Did Hit");
         }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * 1000, Color.white);
+        }
+        
+        
+        return true;
 
     }
 

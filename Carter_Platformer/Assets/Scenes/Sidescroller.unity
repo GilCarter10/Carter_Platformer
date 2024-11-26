@@ -1853,9 +1853,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
-  maxSpeed: 40
-  timeToReachMaxSpeed: 1
-  apexHeight: 2
+  layer:
+    serializedVersion: 2
+    m_Bits: 1
+  maxSpeed: 100
+  timeToReachMaxSpeed: 2.5
+  apexHeight: 10
   apexTime: 0.5
   terminalFallSpeed: 0
 --- !u!4 &1433354315
