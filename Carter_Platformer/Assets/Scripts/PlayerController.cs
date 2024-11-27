@@ -21,21 +21,22 @@ public class PlayerController : MonoBehaviour
 
     public Rigidbody2D rb;
     private float acceleration;
-
-    //RaycastHit2D[] hitTarget;
-
     public float maxSpeed;
     public float timeToReachMaxSpeed;
 
+    public LayerMask layer;
+
     private float gravity;
     private float initialJumpVel;
-
     public float apexHeight;
     public float apexTime;
-
     public float terminalFallSpeed;
 
-    public LayerMask layer;
+    public float coyoteTime;
+    float coyoteClock;
+    bool coyoteActive = false;
+    bool coyoteJump = false;
+
 
     public int health = 10;
 
@@ -122,6 +123,20 @@ public class PlayerController : MonoBehaviour
         }
 
 
+        //coyoteTime
+        if (coyoteActive)
+        {
+            coyoteClock += Time.deltaTime;
+            if (coyoteClock < coyoteTime)
+            {
+                coyoteJump = true;
+            } else
+            {
+                coyoteJump = false;
+            }
+        }
+
+
         //CHARGE DASH
         if (Input.GetKey(KeyCode.X))
         {
@@ -153,8 +168,9 @@ public class PlayerController : MonoBehaviour
             if (chargeNum > chargeMeter.minValue)
             {
                 chargeNum -= Time.deltaTime * cooldownRate;
-            } else if (chargeNum == chargeMeter.minValue) {
-                cooldown = true;
+            } else if (chargeNum <= chargeMeter.minValue) {
+                chargeNum = chargeMeter.minValue;
+                cooldown = false;
             }
 
         } else {
@@ -180,7 +196,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() == true)
+        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || coyoteJump))
         {
             //do jump
             currentVelocity.y += initialJumpVel;
@@ -222,9 +238,12 @@ public class PlayerController : MonoBehaviour
 
         if (hit)
         {
+            coyoteClock = 0;
+            coyoteActive = false;
             return true;
         } else
         {
+            coyoteActive = true;
             return false;
         }
     }
