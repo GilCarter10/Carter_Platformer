@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -38,6 +39,13 @@ public class PlayerController : MonoBehaviour
 
     public int health = 10;
 
+    public Slider chargeMeter;
+    public float chargeNum;
+    public float chargeRate;
+    public float cooldownRate;
+    bool cooldown = false;
+    public Image fill;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,6 +59,8 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update() 
     {
+        chargeMeter.value = chargeNum;
+
         previousCharacterState = currentCharacterState;
 
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
@@ -109,6 +119,46 @@ public class PlayerController : MonoBehaviour
         if (IsDead())
         {
             currentCharacterState = CharacterState.die;
+        }
+
+
+        //CHARGE DASH
+        if (Input.GetKey(KeyCode.X))
+        {
+            if (chargeNum <= chargeMeter.maxValue && !cooldown)
+            {
+                chargeNum += Time.deltaTime * chargeRate;
+            }
+
+        }
+        if (Input.GetKeyUp(KeyCode.X))
+        {
+            if (!cooldown)
+            {
+                if (GetFacingDirection() == FacingDirection.right)
+                {
+                    rb.AddForce(new Vector2(chargeNum, 0), ForceMode2D.Impulse);
+                } else if (GetFacingDirection() == FacingDirection.left)
+                {
+                    rb.AddForce(new Vector2(-chargeNum, 0), ForceMode2D.Impulse);
+                }
+                cooldown = true;
+            }
+
+        }
+
+        if (cooldown)
+        {
+            fill.color = Color.yellow;
+            if (chargeNum > chargeMeter.minValue)
+            {
+                chargeNum -= Time.deltaTime * cooldownRate;
+            } else if (chargeNum == chargeMeter.minValue) {
+                cooldown = true;
+            }
+
+        } else {
+            fill.color = Color.green;
         }
 
     }
