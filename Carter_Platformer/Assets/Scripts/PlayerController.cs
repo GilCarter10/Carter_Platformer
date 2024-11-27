@@ -11,6 +11,13 @@ public class PlayerController : MonoBehaviour
         left, right
     }
 
+    public enum CharacterState
+    {
+        idle, walk, jump, die
+    }
+    public CharacterState currentCharacterState = CharacterState.idle;
+    public CharacterState previousCharacterState = CharacterState.idle;
+
     public Rigidbody2D rb;
     private float acceleration;
 
@@ -29,6 +36,8 @@ public class PlayerController : MonoBehaviour
 
     public LayerMask layer;
 
+    public int health = 10;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -40,13 +49,68 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void Update() 
     {
+        previousCharacterState = currentCharacterState;
+
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
 
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
+
+        switch (currentCharacterState)
+        {
+            case CharacterState.die:
+                //do nothing you're dead
+                break;
+
+            case CharacterState.jump:
+                if (IsGrounded())
+                {
+                    if (IsWalking())
+                    {
+                        currentCharacterState = CharacterState.walk;
+                    } else
+                    {
+                        currentCharacterState = CharacterState.idle;
+                    }
+                }
+                break;
+
+            case CharacterState.walk:
+                //Are we NOT walking?
+                if (!IsWalking())
+                {
+                    currentCharacterState = CharacterState.idle;
+                }
+                //Are we jumping?
+                if (!IsGrounded())
+                {
+                    currentCharacterState = CharacterState.jump;
+                }
+                break;
+
+            case CharacterState.idle:
+                //Are we walking?
+                if (IsWalking())
+                {
+                    currentCharacterState = CharacterState.walk;
+                }
+                //Are we jumping?
+                if (!IsGrounded())
+                {
+                    currentCharacterState = CharacterState.jump;
+                }
+
+                break;
+        }
+
+        if (IsDead())
+        {
+            currentCharacterState = CharacterState.die;
+        }
+
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -86,14 +150,12 @@ public class PlayerController : MonoBehaviour
 
         rb.velocity = currentVelocity;
 
-        //Debug.Log(Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down), 0.5f, default));
-
     }
 
     public bool IsWalking()
     {
 
-        if (rb.velocity.x == 0)
+        if (rb.velocity.x < 0.2 && rb.velocity.x > -0.2)
         {
             return false;
         }
@@ -103,16 +165,6 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-
-    //private void OnTriggerEnter2D(Collider2D collision)
-    //{
-    //    IsGrounded(true);
-    //}
-
-    //private void OnTriggerExit2D(Collider2D collision)
-    //{
-    //    IsGrounded(false);
-    //}
 
     public bool IsGrounded()
     {
@@ -126,6 +178,18 @@ public class PlayerController : MonoBehaviour
             return false;
         }
     }
+
+    public bool IsDead()
+    {
+        return health <= 0;
+    }
+
+    public void OnDeathAnimationComplete()
+    {
+        gameObject.SetActive(false);
+    }
+
+
 
     FacingDirection previous = FacingDirection.left;
 
@@ -149,4 +213,6 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+
 }
