@@ -209,7 +209,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.47, y: 0.71, z: -10}
+  m_LocalPosition: {x: -2.4799995, y: -1.6100001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -347,7 +347,7 @@ GameObject:
   - component: {fileID: 1054579206}
   - component: {fileID: 1054579210}
   - component: {fileID: 1054579209}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: GroundTilemap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1692,6 +1692,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1433354315}
   - {fileID: 1054579205}
   - {fileID: 2077868378}
   m_Father: {fileID: 0}
@@ -1853,14 +1854,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
-  layer:
-    serializedVersion: 2
-    m_Bits: 1
   maxSpeed: 100
   timeToReachMaxSpeed: 2.5
-  apexHeight: 10
+  apexHeight: 5
   apexTime: 0.5
-  terminalFallSpeed: 0
+  terminalFallSpeed: 100
+  layer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!4 &1433354315
 Transform:
   m_ObjectHideFlags: 0
@@ -1869,13 +1870,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1433354312}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.47, y: 0.71, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -16.63, y: -2.38, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1598075210}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1419490948}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1433354316
 MonoBehaviour:
@@ -2061,7 +2062,7 @@ Transform:
   m_GameObject: {fileID: 1885671062}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.47, y: 0.71, z: -10}
+  m_LocalPosition: {x: -2.4799995, y: -1.6100001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4666,5 +4667,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 1419490948}
-  - {fileID: 1433354315}
   - {fileID: 1885671064}

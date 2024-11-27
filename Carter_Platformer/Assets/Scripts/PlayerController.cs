@@ -14,8 +14,7 @@ public class PlayerController : MonoBehaviour
     public Rigidbody2D rb;
     private float acceleration;
 
-    public LayerMask layer;
-    public RaycastHit hitTarget;
+    //RaycastHit2D[] hitTarget;
 
     public float maxSpeed;
     public float timeToReachMaxSpeed;
@@ -28,6 +27,7 @@ public class PlayerController : MonoBehaviour
 
     public float terminalFallSpeed;
 
+    public LayerMask layer;
 
     // Start is called before the first frame update
     void Start()
@@ -37,11 +37,6 @@ public class PlayerController : MonoBehaviour
         gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
         initialJumpVel = 2 * apexHeight / apexTime;
         acceleration = maxSpeed / timeToReachMaxSpeed;
-    }
-
-    private void FixedUpdate()
-    {
-
     }
 
     // Update is called once per frame
@@ -71,22 +66,28 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (Input.GetKeyDown(KeyCode.Space) /*&& IsGrounded() == true*/)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() == true)
         {
-
+            //do jump
             currentVelocity.y += initialJumpVel;
         }
 
         if (IsGrounded() == false)
         {
             //do gravity
-            //currentVelocity.y += gravity * Time.deltaTime;
+            currentVelocity.y += gravity * Time.deltaTime;
         }
 
-        currentVelocity.y += gravity * Time.deltaTime;
-        //currentVelocity += new Vector2(0, gravity);
+
+        if (currentVelocity.y < -terminalFallSpeed)
+        {
+            currentVelocity.y = -terminalFallSpeed;
+        }
 
         rb.velocity = currentVelocity;
+
+        //Debug.Log(Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down), 0.5f, default));
+
     }
 
     public bool IsWalking()
@@ -102,22 +103,28 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+    //private void OnTriggerEnter2D(Collider2D collision)
+    //{
+    //    IsGrounded(true);
+    //}
+
+    //private void OnTriggerExit2D(Collider2D collision)
+    //{
+    //    IsGrounded(false);
+    //}
+
     public bool IsGrounded()
     {
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hitTarget, 1000f, layer))
-        {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down), 0.75f, layer);
 
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hitTarget.distance, Color.yellow);
-            Debug.Log("Did Hit");
-        }
-        else
+        if (hit)
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * 1000, Color.white);
+            return true;
+        } else
+        {
+            return false;
         }
-        
-        
-        return true;
-
     }
 
     FacingDirection previous = FacingDirection.left;
