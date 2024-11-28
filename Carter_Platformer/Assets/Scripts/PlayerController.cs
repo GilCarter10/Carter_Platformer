@@ -47,6 +47,10 @@ public class PlayerController : MonoBehaviour
     bool cooldown = false;
     public Image fill;
 
+    Vector3 scale;
+
+    bool upsideDown = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +59,8 @@ public class PlayerController : MonoBehaviour
         gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
         initialJumpVel = 2 * apexHeight / apexTime;
         acceleration = maxSpeed / timeToReachMaxSpeed;
+
+        scale = transform.localScale;
     }
 
     // Update is called once per frame
@@ -146,21 +152,6 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-        if (Input.GetKeyUp(KeyCode.X))
-        {
-            if (!cooldown)
-            {
-                if (GetFacingDirection() == FacingDirection.right)
-                {
-                    rb.AddForce(new Vector2(chargeNum, 0), ForceMode2D.Impulse);
-                } else if (GetFacingDirection() == FacingDirection.left)
-                {
-                    rb.AddForce(new Vector2(-chargeNum, 0), ForceMode2D.Impulse);
-                }
-                cooldown = true;
-            }
-
-        }
 
         if (cooldown)
         {
@@ -177,13 +168,27 @@ public class PlayerController : MonoBehaviour
             fill.color = Color.green;
         }
 
+
+        //FLIP
+        if (!upsideDown)
+        {
+
+            scale.y = 1;
+            transform.localScale = scale;
+
+        } else
+        {
+            scale.y = -1;
+            transform.localScale = scale;
+        }
+
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
         Vector2 currentVelocity = rb.velocity;
 
-        //Debug.Log(currentVelocity);
+        Debug.Log(currentVelocity);
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
@@ -199,19 +204,64 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || coyoteJump))
         {
             //do jump
-            currentVelocity.y += initialJumpVel;
+           // if (!upsideDown)
+            //{
+                currentVelocity.y += initialJumpVel * scale.y;
+            //} else
+            //{
+              //  currentVelocity.y -= initialJumpVel;
+            //}
+
         }
 
         if (IsGrounded() == false)
         {
             //do gravity
-            currentVelocity.y += gravity * Time.deltaTime;
+            if (!upsideDown)
+            {
+                currentVelocity.y += gravity * Time.deltaTime;
+            } else
+            {
+                currentVelocity.y -= gravity * Time.deltaTime;
+            } 
+
+            if (!upsideDown)
+            {
+                if (currentVelocity.y < -terminalFallSpeed)
+                {
+                    currentVelocity.y = -terminalFallSpeed;
+                }
+            }
+            else
+            {
+                if (currentVelocity.y < -terminalFallSpeed)
+                {
+                    currentVelocity.y = terminalFallSpeed;
+                }
+            }
+
         }
 
+        
 
-        if (currentVelocity.y < -terminalFallSpeed)
+
+
+        //chargeDash release
+        if (Input.GetKeyUp(KeyCode.X))
         {
-            currentVelocity.y = -terminalFallSpeed;
+            if (!cooldown)
+            {
+                if (GetFacingDirection() == FacingDirection.right)
+                {
+                    currentVelocity.x += chargeNum;
+                }
+                else if (GetFacingDirection() == FacingDirection.left)
+                {
+                    currentVelocity.x -= chargeNum;
+                }
+                cooldown = true;
+            }
+
         }
 
         rb.velocity = currentVelocity;
@@ -234,7 +284,9 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down), 0.75f, layer);
+        RaycastHit2D hit;
+
+            hit = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down * scale.y), 0.75f, layer);
 
         if (hit)
         {
@@ -246,6 +298,7 @@ public class PlayerController : MonoBehaviour
             coyoteActive = true;
             return false;
         }
+
     }
 
     public bool IsDead()
@@ -283,5 +336,16 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!upsideDown)
+        {
+            upsideDown = true;
+        } else
+        {
+            upsideDown = false;
+        }
+        
+    }
 
 }
