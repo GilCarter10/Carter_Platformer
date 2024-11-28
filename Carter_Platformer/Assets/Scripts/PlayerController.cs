@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,11 @@ public class PlayerController : MonoBehaviour
         left, right
     }
 
+    public enum WallDirection
+    {
+        left, right, none
+    }
+
     public enum CharacterState
     {
         idle, walk, jump, die
@@ -19,27 +25,32 @@ public class PlayerController : MonoBehaviour
     public CharacterState currentCharacterState = CharacterState.idle;
     public CharacterState previousCharacterState = CharacterState.idle;
 
+    //horizontal movement
     public Rigidbody2D rb;
     private float acceleration;
     public float maxSpeed;
     public float timeToReachMaxSpeed;
 
+    //is grounded check
     public LayerMask layer;
 
+    //vertical movement
     private float gravity;
     private float initialJumpVel;
     public float apexHeight;
     public float apexTime;
     public float terminalFallSpeed;
 
+    //coyote time
     public float coyoteTime;
     float coyoteClock;
     bool coyoteActive = false;
     bool coyoteJump = false;
 
-
+    //health
     public int health = 10;
 
+    //charge dash
     public Slider chargeMeter;
     public float chargeNum;
     public float chargeRate;
@@ -47,9 +58,13 @@ public class PlayerController : MonoBehaviour
     bool cooldown = false;
     public Image fill;
 
+    //wall jump
+    
+
+    //gravity flip
+    bool upsideDown = false;
     Vector3 scale;
 
-    bool upsideDown = false;
 
     // Start is called before the first frame update
     void Start()
@@ -286,7 +301,7 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit;
 
-            hit = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down * scale.y), 0.75f, layer);
+        hit = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.down * scale.y), 0.75f, layer);
 
         if (hit)
         {
@@ -298,6 +313,30 @@ public class PlayerController : MonoBehaviour
             coyoteActive = true;
             return false;
         }
+
+    }
+
+    public WallDirection GetTouchingWall()
+    {
+        RaycastHit2D right;
+        RaycastHit2D left;
+
+        right = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.right), 0.75f, layer);
+        left = Physics2D.Raycast(transform.position, transform.TransformDirection(Vector2.left), 0.75f, layer);
+
+        if (right)
+        {
+            return WallDirection.right;
+
+        } else if (left)
+        {
+            return WallDirection.left;
+
+        } else {
+            return WallDirection.none;
+
+        }
+
 
     }
 
