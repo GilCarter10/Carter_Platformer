@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
     public Image fill;
 
     //wall jump
-    
+    public float wallJumpDistance;
 
     //gravity flip
     bool upsideDown = false;
@@ -203,31 +203,46 @@ public class PlayerController : MonoBehaviour
     {
         Vector2 currentVelocity = rb.velocity;
 
-        Debug.Log(currentVelocity);
+        //Debug.Log(currentVelocity);
 
+        //left
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
             currentVelocity += acceleration * Time.deltaTime * Vector2.left;
         }
 
+        //right
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
             currentVelocity += acceleration * Time.deltaTime * Vector2.right;
         }
 
 
-        if (Input.GetKeyDown(KeyCode.Space) && (IsGrounded() || coyoteJump))
+        //jump
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            //do jump
-           // if (!upsideDown)
-            //{
+            if ((IsGrounded() || coyoteJump)){
+                //do normal jump
                 currentVelocity.y += initialJumpVel * scale.y;
-            //} else
-            //{
-              //  currentVelocity.y -= initialJumpVel;
-            //}
+            }
+            
+            if (GetTouchingWall() == WallDirection.right && !IsGrounded())
+            {
+                //do a jump to the LEFT
+                currentVelocity.y += initialJumpVel * scale.y;
+                currentVelocity.x -= wallJumpDistance;
+            }
+
+            if (GetTouchingWall() == WallDirection.left && !IsGrounded())
+            {
+                //do a jump to the RIGHT
+                currentVelocity.y += initialJumpVel * scale.y;
+                currentVelocity.x += wallJumpDistance;
+            }
+
 
         }
+
 
         if (IsGrounded() == false)
         {
@@ -240,6 +255,7 @@ public class PlayerController : MonoBehaviour
                 currentVelocity.y -= gravity * Time.deltaTime;
             } 
 
+            //check terminal fall speed
             if (!upsideDown)
             {
                 if (currentVelocity.y < -terminalFallSpeed)
@@ -256,9 +272,6 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-
-        
-
 
 
         //chargeDash release
@@ -377,6 +390,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        GravityPowerup GravityPowerup = collision.gameObject.GetComponent<GravityPowerup>();
+        GravityPowerup.RandomPosition();
         if (!upsideDown)
         {
             upsideDown = true;

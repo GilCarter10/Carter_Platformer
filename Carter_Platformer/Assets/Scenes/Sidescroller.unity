@@ -20984,6 +20984,7 @@ MonoBehaviour:
   chargeRate: 5
   cooldownRate: 2
   fill: {fileID: 1637704690}
+  wallJumpDistance: 10
 --- !u!4 &1433354315
 Transform:
   m_ObjectHideFlags: 0
