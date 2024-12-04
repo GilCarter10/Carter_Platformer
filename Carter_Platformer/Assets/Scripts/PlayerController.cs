@@ -78,6 +78,11 @@ public class PlayerController : MonoBehaviour
         scale = transform.localScale;
     }
 
+    private void FixedUpdate()
+    {
+        
+    }
+
     // Update is called once per frame
     void Update() 
     {
