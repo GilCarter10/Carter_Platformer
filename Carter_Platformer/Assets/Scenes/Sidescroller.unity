@@ -20979,10 +20979,10 @@ MonoBehaviour:
   coyoteTime: 0.25
   health: 10
   chargeMeter: {fileID: 103613146}
-  chargeNum: 0
   chargeRate: 5
   cooldownRate: 2
   fill: {fileID: 1637704690}
+  chargeMultiplier: 3
   wallJumpDistance: 10
 --- !u!4 &1433354315
 Transform:

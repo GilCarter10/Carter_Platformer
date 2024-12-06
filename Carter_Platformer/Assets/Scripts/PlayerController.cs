@@ -25,6 +25,12 @@ public class PlayerController : MonoBehaviour
     public CharacterState currentCharacterState = CharacterState.idle;
     public CharacterState previousCharacterState = CharacterState.idle;
 
+    //movement bools
+    private bool left = false;
+    private bool right = false;
+    private bool jump = false;
+    private bool dashRelease = false;
+    
     //horizontal movement
     public Rigidbody2D rb;
     private float acceleration;
@@ -44,26 +50,27 @@ public class PlayerController : MonoBehaviour
     //coyote time
     public float coyoteTime;
     float coyoteClock;
-    bool coyoteActive = false;
-    bool coyoteJump = false;
+    private bool coyoteActive = false;
+    private bool coyoteJump = false;
 
     //health
     public int health = 10;
 
     //charge dash
     public Slider chargeMeter;
-    public float chargeNum;
+    private float chargeNum;
     public float chargeRate;
     public float cooldownRate;
-    bool cooldown = false;
+    private bool cooldown = false;
     public Image fill;
+    public float chargeMultiplier;
 
     //wall jump
     public float wallJumpDistance;
 
     //gravity flip
-    bool upsideDown = false;
-    Vector3 scale;
+    private bool upsideDown = false;
+    private Vector3 scale;
 
 
     // Start is called before the first frame update
@@ -80,21 +87,21 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        
+        //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
+        //manage the actual movement of the character.
+        Vector2 playerInput = new Vector2();
+        MovementUpdate(playerInput);
     }
 
     // Update is called once per frame
     void Update() 
     {
-        chargeMeter.value = chargeNum;
+        //Debug.Log(left);
+        //Debug.Log(right);
+        Debug.Log(jump);
 
+        //switching character states
         previousCharacterState = currentCharacterState;
-
-        //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
-        //manage the actual movement of the character.
-
-        Vector2 playerInput = new Vector2();
-        MovementUpdate(playerInput);
 
         switch (currentCharacterState)
         {
@@ -141,12 +148,34 @@ public class PlayerController : MonoBehaviour
                 }
 
                 break;
+
+
         }
 
+        //die state
         if (IsDead())
         {
             currentCharacterState = CharacterState.die;
         }
+
+        //move left input
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            left = true;
+        }
+        
+        //move right input
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            right = true;
+        }
+
+        //jump input
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            jump = true;
+        }
+
 
 
         //coyoteTime
@@ -163,7 +192,9 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        //CHARGE DASH
+        //charge dash
+        chargeMeter.value = chargeNum;
+
         if (Input.GetKey(KeyCode.X))
         {
             if (chargeNum <= chargeMeter.maxValue && !cooldown)
@@ -188,8 +219,14 @@ public class PlayerController : MonoBehaviour
             fill.color = Color.green;
         }
 
+        //dash release input
+        if (Input.GetKeyUp(KeyCode.X))
+        {
+            dashRelease = true;
+        }
 
-        //FLIP
+
+        //flip gravity
         if (!upsideDown)
         {
 
@@ -210,21 +247,28 @@ public class PlayerController : MonoBehaviour
 
         //Debug.Log(currentVelocity);
 
-        //left
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        //move left physics
+        if (left)
         {
-            currentVelocity += acceleration * Time.deltaTime * Vector2.left;
+            if (currentVelocity.x < maxSpeed)
+            {
+                currentVelocity += acceleration * Time.deltaTime * Vector2.left;
+            }
+            left = false;
         }
 
-        //right
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        //move right physics
+        if (right)
         {
-            currentVelocity += acceleration * Time.deltaTime * Vector2.right;
+            if (currentVelocity.x < maxSpeed)
+            {
+                currentVelocity += acceleration * Time.deltaTime * Vector2.right;
+            }
+            right = false;
         }
 
-
-        //jump
-        if (Input.GetKeyDown(KeyCode.Space))
+        //jump physics
+        if (jump)
         {
             if ((IsGrounded() || coyoteJump)){
                 //do normal jump
@@ -244,11 +288,10 @@ public class PlayerController : MonoBehaviour
                 currentVelocity.y += initialJumpVel * scale.y;
                 currentVelocity.x += wallJumpDistance;
             }
-
-
+            jump = false;
         }
 
-
+        //grounded check
         if (IsGrounded() == false)
         {
             //do gravity
@@ -278,29 +321,29 @@ public class PlayerController : MonoBehaviour
 
         }
 
-
-        //chargeDash release
-        if (Input.GetKeyUp(KeyCode.X))
+        //chargeDash physics
+        if (dashRelease)
         {
             if (!cooldown)
             {
                 if (GetFacingDirection() == FacingDirection.right)
                 {
-                    currentVelocity.x += chargeNum;
+                    currentVelocity.x += chargeNum * chargeMultiplier;
                 }
                 else if (GetFacingDirection() == FacingDirection.left)
                 {
-                    currentVelocity.x -= chargeNum;
+                    currentVelocity.x -= chargeNum * chargeMultiplier;
                 }
                 cooldown = true;
             }
-
+            dashRelease = false;
         }
 
         rb.velocity = currentVelocity;
 
     }
 
+    //is walking check
     public bool IsWalking()
     {
 
@@ -315,6 +358,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    //is grounded check
     public bool IsGrounded()
     {
         RaycastHit2D hit;
@@ -334,6 +378,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    //finds which direction the wall that the player is touching
     public WallDirection GetTouchingWall()
     {
         RaycastHit2D right;
@@ -358,18 +403,20 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    //makes dead
     public bool IsDead()
     {
         return health <= 0;
     }
 
+    //removes game object after dead
     public void OnDeathAnimationComplete()
     {
         gameObject.SetActive(false);
     }
 
 
-
+    //gets facing direction
     FacingDirection previous = FacingDirection.left;
 
     public FacingDirection GetFacingDirection()
@@ -393,6 +440,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    //gravity powerup trigger
     private void OnTriggerEnter2D(Collider2D collision)
     {
         GravityPowerup GravityPowerup = collision.gameObject.GetComponent<GravityPowerup>();
